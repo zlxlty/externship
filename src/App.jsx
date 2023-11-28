@@ -36,8 +36,6 @@ function App() {
   const [playing, setPlaying] = useState(false)
   const [facing, setFacing] = useState('front')
 
-  const cardBackGround = useMemo(() => facing === 'front' ? 'bg-slate-200' : 'bg-slate-400', [facing])
-
 
   useEffect(() => {
 
@@ -83,7 +81,7 @@ function App() {
       </div>
 
       <section className='w-screen h-[30vh] flex justify-center items-center'>
-        <div onClick={handleCardClick} className={`${cardBackGround} w-[40vw] h-[30vh] bg-slate-400 text-center flex justify-center items-center text-lg select-none`}>
+        <div onClick={handleCardClick} className={`${facing === "front" ? "bg-slate-200" : "bg-slate-400"} w-[40vw] h-[30vh] bg-slate-400 text-center flex justify-center items-center text-lg select-none`}>
           {cards[currentCard][facing]}
         </div>
       </section>
