@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import './App.css'
+import { useEffect } from 'react'
 
 function App() {
 
@@ -32,9 +33,29 @@ function App() {
 
   const [cards, setCards] = useState(Flashcards[0])
   const [currentCard, setCurrentCard] = useState(0)
+  const [playing, setPlaying] = useState(false)
   const [facing, setFacing] = useState('front')
 
-  const cardBackGround = useMemo(() => facing === 'front' ? 'bg-slate-100' : 'bg-slate-400', [facing])
+  const cardBackGround = useMemo(() => facing === 'front' ? 'bg-slate-200' : 'bg-slate-400', [facing])
+
+
+  useEffect(() => {
+
+    let interval = null
+
+    if (playing) {
+      interval = setInterval(() => {
+        setCurrentCard((currentCard + 1) % cards.length)
+      }, 1500)
+    }
+
+    return () => clearInterval(interval)
+
+  }, [cards, currentCard, playing, facing])
+
+  function handlePlayingClick() {
+    setPlaying(!playing)
+  }
 
   function handleCardClick() {
     facing === 'front' ? setFacing('back') : setFacing('front')
@@ -46,7 +67,7 @@ function App() {
   }
 
   function handlePreviousCard() {
-    setCurrentCard((currentCard - 1) % cards.length)
+    setCurrentCard((currentCard - 1 + cards.length) % cards.length)
     setFacing('front')
   }
 
@@ -71,10 +92,18 @@ function App() {
           <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
         </svg>
 
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-16 h-16">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z" />
+        <svg onClick={handlePlayingClick} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-16 h-16">
+          { playing ? 
+            <path strokeLinecap="round" strokeLinejoin="round" d="M14.25 9v6m-4.5 0V9M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          :
+            <>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z" />
+            </>
+          }
         </svg>
+
+        
 
         <svg onClick={handleNextCard} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
           <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
