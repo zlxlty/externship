@@ -81,7 +81,7 @@ function App() {
       </div>
 
       <section className='w-screen h-[30vh] flex justify-center items-center'>
-        <div onClick={handleCardClick} className={`${facing === "front" ? "bg-slate-200" : "bg-slate-400"} w-[40vw] h-[30vh] bg-slate-400 text-center flex justify-center items-center text-lg select-none`}>
+        <div onClick={handleCardClick} style={{backgroundColor: facing === "front" ? "rgb(226 232 240)" : "rgb(148 163 184)"}} className="w-[40vw] h-[30vh] bg-slate-400 text-center flex justify-center items-center text-lg select-none">
           {cards[currentCard][facing]}
         </div>
       </section>
