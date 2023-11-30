@@ -1,6 +1,10 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { useGoogleLogin } from '@react-oauth/google';
+import axios from 'axios';
 import './App.css'
-import { useEffect } from 'react'
+import { useAuthStore } from './stores/authStore'
+
+// Test for Slack Integration
 
 function App() {
 
@@ -31,6 +35,8 @@ function App() {
     ]
   ], [])
 
+  const [currentUser, loginUser, logoutUser] = useAuthStore(state => [state.currentUser, state.loginUser, state.logoutUser])
+
   const [cards, setCards] = useState(Flashcards[0])
   const [currentCard, setCurrentCard] = useState(0)
   const [playing, setPlaying] = useState(false)
@@ -55,6 +61,22 @@ function App() {
     setPlaying(!playing)
   }
 
+  const googleLogin = useGoogleLogin({
+    onSuccess: async tokenResponse => {
+      console.log(tokenResponse);
+      // fetching userinfo can be done on the client or the server
+      const userInfo = await axios
+        .get('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+        })
+        .then(res => res.data);
+
+      loginUser(userInfo)
+      console.log(userInfo);
+    },
+    // flow: 'implicit', // implicit is the default
+  });
+
   function handleCardClick() {
     facing === 'front' ? setFacing('back') : setFacing('front')
   }
@@ -71,14 +93,20 @@ function App() {
 
   return (
     <main className='flex flex-col justify-between items-center w-screen h-screen px-10 py-36'>
-      <div className="dropdown dropdown-hover">
+      <section>
+        { !currentUser ? 
+          <button onClick={() => googleLogin()} className="btn">Log in</button> :
+          <button onClick={() => logoutUser()} className="btn">Welcome! {currentUser.name}</button>
+        }
+      </section>
+      <section className="dropdown dropdown-hover">
         <div tabIndex={0} role="button" className="btn w-[30vw]">Flashcards</div>
         <ul className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-[30vw]">
           <li><a onClick={() => setCards(Flashcards[0])}>Flashcards 1</a></li>
           <li><a onClick={() => setCards(Flashcards[1])}>Flashcards 2</a></li>
           <li><a onClick={() => setCards(Flashcards[2])}>Flashcards 3</a></li>
         </ul>
-      </div>
+      </section>
 
       <section className='w-screen h-[30vh] flex justify-center items-center'>
         <div onClick={handleCardClick} style={{backgroundColor: facing === "front" ? "rgb(226 232 240)" : "rgb(148 163 184)"}} className="w-[40vw] h-[30vh] bg-slate-400 text-center flex justify-center items-center text-lg select-none">
