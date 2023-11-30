@@ -34,7 +34,7 @@ function App() {
     ]
   ], [])
 
-  const [currentUser, logoutUser] = useAuthStore(state => [state.currentUser, state.loginUser, state.logoutUser])
+  const [currentUser, logoutUser] = useAuthStore(state => [state.currentUser, state.logoutUser])
 
   const [cards, setCards] = useState(Flashcards[0])
   const [currentCard, setCurrentCard] = useState(0)
