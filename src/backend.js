@@ -40,8 +40,7 @@ const DemoDeckList = [
   },
 ]
 
-export async function initDemoDeckList() {
-  await sleep(200);
+export function initDemoDeckList() {
   !localStorage.getItem('deckList') && localStorage.setItem('deckList', JSON.stringify(DemoDeckList));
 }
 
