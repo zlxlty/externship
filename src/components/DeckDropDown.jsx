@@ -22,7 +22,7 @@ export default function DeckDropDown({ className }) {
           {!cardDeck ? "loading..." : cardDeck.name}
         </div>
         {deckInfo && (
-          <ul className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-[15vw]">
+          <ul className="dropdown-content z-[99] menu p-2 shadow bg-base-100 rounded-box w-[15vw]">
             {deckInfo.map(({ id, name }) => (
               <li key={id}>
                 <a
