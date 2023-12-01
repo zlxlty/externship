@@ -7,8 +7,8 @@ import DeckDropDown from "./components/DeckDropDown";
 import CardSlide from "./components/CardSlide";
 import CardPlayController from "./components/CardPlayController";
 // Card: { id: number, front: string, back: string }
-// CardDeck:{ id: number, name: string, content: Card[] }
-// DeckList: CardDeck[]
+// CardDeck: { id: number, name: string, content: Card[] }
+// DeckList: { id: number, name: string }[]  // a list of card deck info wihout content
 
 function App() {
   // DEV: load DemoDeckList to localStorage as a fake database
