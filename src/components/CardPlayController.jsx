@@ -66,6 +66,9 @@ export default function CardPlayController({ className }) {
     <main
       className={className + " flex flex-col justify-center items-center gap-4"}
     >
+      <p className="text-primary">
+        {parseInt(cardIndex) + 1}/{cardDeck ? cardDeck.content.length : "???"}
+      </p>
       <input
         onChange={handleRangeChange}
         type="range"

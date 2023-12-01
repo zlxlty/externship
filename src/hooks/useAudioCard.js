@@ -4,7 +4,7 @@ import { getCardDeck, getDeckInfo } from '../backend';
 export function useCardDeck(id) {
   const { data, mutate, error } = useSWR(
     `/api/decks/${id}`,
-    async url => getCardDeck(url.split('/').pop())
+    url => getCardDeck(url.split('/').pop())
   )
 
   return {
@@ -17,7 +17,7 @@ export function useCardDeck(id) {
 export function useDeckInfo() {
   const { data, error } = useSWR(
     `/api/decks`,
-    async () => getDeckInfo()
+    () => getDeckInfo()
   )
   return {
     deckInfo: data,
