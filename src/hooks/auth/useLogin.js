@@ -1,5 +1,5 @@
 import { useGoogleLogin } from '@react-oauth/google';
-import { useAuthStore } from './authStore';
+import { useAuthStore } from '../../stores/authStore';
 import axios from 'axios';
 
 export function useLogin() {
