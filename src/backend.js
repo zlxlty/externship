@@ -53,9 +53,8 @@ export async function getDeckInfo() {
 
 export async function getCardDeck(id) {
   await sleep(200);
-  console.log(id)
   const deckList = JSON.parse(localStorage.getItem('deckList'));
-  return deckList && deckList[id];
+  return deckList && deckList.find(deck => deck.id === parseInt(id));
 }
 
 export async function upsertCardDeck(cardDeck) {

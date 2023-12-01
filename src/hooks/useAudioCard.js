@@ -2,12 +2,14 @@ import useSWR from 'swr';
 import { getCardDeck, getDeckInfo } from '../backend';
 
 export function useCardDeck(id) {
-  const { data, error } = useSWR(
+  const { data, mutate, error } = useSWR(
     `/api/decks/${id}`,
     async url => getCardDeck(url.split('/').pop())
   )
+
   return {
     cardDeck: data,
+    mutate,
     error
   }
 }

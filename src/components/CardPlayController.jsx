@@ -56,9 +56,25 @@ export default function CardPlayController({ className }) {
     setFrontFacing(true);
   }
 
+  function handleRangeChange(e) {
+    setCardIndex(e.target.value);
+    setIsPlaying(false);
+    setFrontFacing(true);
+  }
+
   return (
-    <main className={className}>
-      <section className="flex justify-around items-center space-x-3">
+    <main
+      className={className + " flex flex-col justify-center items-center gap-4"}
+    >
+      <input
+        onChange={handleRangeChange}
+        type="range"
+        min={0}
+        max={cardDeck ? cardDeck.content.length - 1 : 100}
+        value={cardIndex}
+        className="range range-primary scale-75 w-[15vw]"
+      />
+      <section className="flex justify-around items-center space-x-3 text-primary">
         <svg
           onClick={handlePreviousCard}
           xmlns="http://www.w3.org/2000/svg"

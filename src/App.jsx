@@ -17,9 +17,11 @@ function App() {
   }, []);
 
   return (
-    <main className="flex flex-col justify-center items-center gap-24 w-screen h-screen">
+    <main
+      style={{ fontFamily: "Chalkboard,comic sans ms,'sans-serif'" }}
+      className="flex flex-col justify-center items-center gap-24 w-screen h-screen"
+    >
       <ProfileAvatar className="absolute top-7 right-7" />
-
       <DeckDropDown />
       <CardSlide />
       <CardPlayController />

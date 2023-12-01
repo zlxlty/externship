@@ -14,7 +14,11 @@ export default function DeckDropDown({ className }) {
   return (
     <main className={className}>
       <section className="dropdown dropdown-hover">
-        <div tabIndex={0} role="button" className="btn w-[15vw]">
+        <div
+          tabIndex={0}
+          role="button"
+          className="btn w-[15vw] bg-secondary hover:bg-primary text-slate-100"
+        >
           {!cardDeck ? "loading..." : cardDeck.name}
         </div>
         {deckInfo && (
