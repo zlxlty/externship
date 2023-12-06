@@ -56,6 +56,20 @@ export async function getCardDeck(id) {
   return deckList && deckList.find(deck => deck.id === parseInt(id));
 }
 
+export async function addCardDeck() {
+  await sleep(200);
+  const deckList = JSON.parse(localStorage.getItem('deckList'));
+  const id = deckList[deckList.length - 1].id + 1;
+  const cardDeck = {
+    id,
+    name: `New Deck ${id}`,
+    content: []
+  }
+  const newDeckList = [...deckList, cardDeck];
+  localStorage.setItem('deckList', JSON.stringify(newDeckList));
+  return cardDeck;
+}
+
 export async function deleteCardDeck(id) {
   await sleep(200);
   const deckList = JSON.parse(localStorage.getItem('deckList'));

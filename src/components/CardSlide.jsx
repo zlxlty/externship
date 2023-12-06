@@ -1,8 +1,11 @@
 /* eslint-disable react/prop-types */
 import { useState, useRef, useEffect } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { useFlashcardStore } from "../stores/flashcardStore";
 import { useCardDeck } from "../hooks/useAudioCard";
 import { upsertCardDeck } from "../backend";
+import axios from "axios";
+import { BACKEND_URL, USERID_TOKEN } from "../constants";
 
 export default function CardSlide({ className }) {
   const [cardIndex, setCardIndex] = useFlashcardStore((state) => [
@@ -18,8 +21,8 @@ export default function CardSlide({ className }) {
   const { cardDeck, mutate } = useCardDeck(cardDeckId);
 
   const [isEditing, setIsEditing] = useState(false);
-  const frontInputRef = useRef(null);
-  const backInputRef = useRef(null);
+  const frontInputRef = useRef("");
+  const backInputRef = useRef("");
 
   useEffect(() => {
     if (cardDeck) {
@@ -27,6 +30,14 @@ export default function CardSlide({ className }) {
       backInputRef.current = cardDeck.content[cardIndex].back;
     }
   }, [cardDeck, cardIndex]);
+
+  function handleFrontChange(e) {
+    frontInputRef.current = e.target.value;
+  }
+
+  function handleBackChange(e) {
+    backInputRef.current = e.target.value;
+  }
 
   function handleCardClick() {
     !isEditing && setFrontFacing(!frontFacing);
@@ -37,27 +48,45 @@ export default function CardSlide({ className }) {
       const newCardDeck = { ...cardDeck };
       newCardDeck.content[cardIndex].front = frontInputRef.current;
       newCardDeck.content[cardIndex].back = backInputRef.current;
-      upsertCardDeck(newCardDeck).then(() => mutate(newCardDeck));
-      setIsEditing(false);
+      upsertCardDeck(newCardDeck).then(() => {
+        mutate(newCardDeck);
+        setIsEditing(false);
+      });
+
+      const requestBody = {
+        id:
+          localStorage.getItem(USERID_TOKEN) +
+          newCardDeck.content[cardIndex].id,
+        front: newCardDeck.content[cardIndex].front,
+        back: newCardDeck.content[cardIndex].back,
+      };
+
+      axios
+        .post(`${BACKEND_URL}/create-card/`, requestBody)
+        .then((res) => console.log(res))
+        .catch((err) => console.log(err));
     }
+  }
+
+  function handleCardDelete() {
+    const newCardDeck = { ...cardDeck };
+    newCardDeck.content.splice(cardIndex, 1);
+    upsertCardDeck(newCardDeck).then(() => {
+      mutate(newCardDeck);
+      setCardIndex(cardIndex - 1 < 0 ? 0 : cardIndex - 1);
+      setIsEditing(false);
+    });
   }
 
   function handleCreateCard() {
     const newCardDeck = { ...cardDeck };
-    newCardDeck.content.push({ front: "", back: "" });
+    newCardDeck.content.push({ id: uuidv4(), front: "", back: "" });
     upsertCardDeck(newCardDeck).then(() => {
-      mutate(newCardDeck);
-      setCardIndex(newCardDeck.content.length - 1);
-      setIsEditing(true);
+      mutate(newCardDeck).then(() => {
+        setCardIndex(newCardDeck.content.length - 1);
+        setIsEditing(true);
+      });
     });
-  }
-
-  function handleFrontChange(e) {
-    frontInputRef.current = e.target.value;
-  }
-
-  function handleBackChange(e) {
-    backInputRef.current = e.target.value;
   }
 
   return (
@@ -77,16 +106,16 @@ export default function CardSlide({ className }) {
               <div className="flex flex-col w-full h-full p-2 gap-2">
                 <div className="grid grid-cols-2 w-full h-full gap-1">
                   <textarea
-                    maxLength={200}
                     onChange={handleFrontChange}
+                    maxLength={200}
                     className="textarea textarea-primary text-base resize-none"
                     placeholder="Front Content"
                   >
                     {frontInputRef.current}
                   </textarea>
                   <textarea
-                    maxLength={200}
                     onChange={handleBackChange}
+                    maxLength={200}
                     className="textarea textarea-primary text-base resize-none"
                     placeholder="Back Content"
                   >
@@ -100,7 +129,10 @@ export default function CardSlide({ className }) {
                   >
                     Save
                   </button>
-                  <button className="btn btn-sm btn-outline btn-secondary w-16">
+                  <button
+                    onClick={handleCardDelete}
+                    className="btn btn-sm btn-outline btn-secondary w-16"
+                  >
                     Delete
                   </button>
                 </div>
