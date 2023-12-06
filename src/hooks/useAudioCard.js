@@ -3,7 +3,7 @@ import { getCardDeck, getDeckInfo } from '../backend';
 
 export function useCardDeck(id) {
   const { data, mutate, error } = useSWR(
-    `/api/decks/${id}`,
+    id !== null && `/api/decks/${id}`,
     url => getCardDeck(url.split('/').pop())
   )
 
@@ -15,12 +15,13 @@ export function useCardDeck(id) {
 }
 
 export function useDeckInfo() {
-  const { data, error } = useSWR(
+  const { data, mutate, error } = useSWR(
     `/api/decks`,
     () => getDeckInfo()
   )
   return {
     deckInfo: data,
+    mutate,
     error
   }
 }

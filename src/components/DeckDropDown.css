@@ -1,0 +1,4 @@
+.hover-trigger:hover .hover-target {
+  display: flex;
+  flex-direction: row;
+}
