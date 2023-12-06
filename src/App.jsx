@@ -1,6 +1,8 @@
 import { useEffect } from "react";
+import { v4 as uuidv4 } from "uuid";
 import "./App.css";
 import { initDemoDeckList } from "./backend";
+import { USERID_TOKEN } from "./constants";
 
 import ProfileAvatar from "./components/ProfileAvatar";
 import DeckDropDown from "./components/DeckDropDown";
@@ -14,7 +16,13 @@ function App() {
   // DEV: load DemoDeckList to localStorage as a fake database
   useEffect(() => {
     initDemoDeckList();
+    generateUUID();
   }, []);
+
+  function generateUUID() {
+    !localStorage.getItem(USERID_TOKEN) &&
+      localStorage.setItem(USERID_TOKEN, uuidv4());
+  }
 
   return (
     <main

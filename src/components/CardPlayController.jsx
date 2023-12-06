@@ -1,7 +1,8 @@
 /* eslint-disable react/prop-types */
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFlashcardStore } from "../stores/flashcardStore";
 import { useCardDeck } from "../hooks/useAudioCard";
+import { BACKEND_URL, USERID_TOKEN } from "../constants";
 
 export default function CardPlayController({ className }) {
   const [cardIndex, setCardIndex] = useFlashcardStore((state) => [
@@ -20,28 +21,94 @@ export default function CardPlayController({ className }) {
 
   const { cardDeck } = useCardDeck(cardDeckId);
 
-  useEffect(() => {
-    let interval = null;
+  const [isDelay, setIsDelay] = useState(false);
+  const audioRef = useRef(null);
 
-    if (cardDeck && isPlaying) {
-      interval = setInterval(() => {
-        setFrontFacing(!frontFacing);
-        !frontFacing && setCardIndex((cardIndex + 1) % cardDeck.content.length);
-      }, 1500);
+  useEffect(() => {
+    if (isPlaying && cardDeck && !isDelay) {
+      const cardRequestId =
+        localStorage.getItem(USERID_TOKEN) + cardDeck.content[cardIndex].id;
+      const requestURL = frontFacing
+        ? `${BACKEND_URL}/get-card/front${cardRequestId}/`
+        : `${BACKEND_URL}/get-card/back${cardRequestId}/`;
+      fetch(requestURL)
+        .then((response) => response.blob())
+        .then((blob) => {
+          audioRef.current.src = URL.createObjectURL(blob);
+          audioRef.current.play();
+        })
+        .catch((err) => console.log(err));
+    } else if (!isPlaying) {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
     }
 
-    return () => clearInterval(interval);
-  }, [
-    cardDeck,
-    cardIndex,
-    frontFacing,
-    setFrontFacing,
-    isPlaying,
-    setCardIndex,
-  ]);
+    // Cleanup the audio src when component unmounts or currentIndex changes
+    return () => {
+      if (audioRef.current) {
+        URL.revokeObjectURL(audioRef.current.src);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        audioRef.current.src = "";
+      }
+    };
+  }, [isPlaying, cardIndex, cardDeckId, frontFacing, isDelay]);
+
+  useEffect(() => {
+    const audioElement = audioRef.current;
+    function handleAudioEnded() {
+      setIsDelay(true);
+      setTimeout(() => {
+        setIsDelay(false);
+        setFrontFacing(!frontFacing);
+        !frontFacing && setCardIndex((cardIndex + 1) % cardDeck.content.length);
+      }, 700);
+    }
+
+    if (audioElement) {
+      audioElement.addEventListener("ended", handleAudioEnded);
+    }
+
+    return () => {
+      if (audioElement) {
+        audioElement.removeEventListener("ended", handleAudioEnded);
+      }
+    };
+  }, [cardIndex, frontFacing, cardDeckId]);
+
+  // useEffect(() => {
+  //   let interval = null;
+
+  //   if (cardDeck && isPlaying) {
+  //     interval = setInterval(() => {
+  //       setFrontFacing(!frontFacing);
+  //       !frontFacing && setCardIndex((cardIndex + 1) % cardDeck.content.length);
+  //     }, 1500);
+  //   }
+
+  //   return () => clearInterval(interval);
+  // }, [
+  //   cardDeck,
+  //   cardIndex,
+  //   frontFacing,
+  //   setFrontFacing,
+  //   isPlaying,
+  //   setCardIndex,
+  // ]);
 
   function handlePlayingClick() {
     setIsPlaying(!isPlaying);
+    // const cardRequestId =
+    //   localStorage.getItem(USERID_TOKEN) + cardDeck.content[cardIndex].id;
+    // const requestURL = `${BACKEND_URL}/get-card/front${cardRequestId}/`;
+    // !isPlaying &&
+    //   fetch(requestURL)
+    //     .then((response) => response.blob())
+    //     .then((blob) => {
+    //       audioRef.current.src = URL.createObjectURL(blob);
+    //       audioRef.current.play();
+    //     })
+    //     .catch((err) => console.log(err));
   }
 
   function handleNextCard() {
@@ -66,6 +133,7 @@ export default function CardPlayController({ className }) {
     <main
       className={className + " flex flex-col justify-center items-center gap-4"}
     >
+      <audio ref={audioRef} />
       <p className="text-primary">
         {parseInt(cardIndex) + 1}/{cardDeck ? cardDeck.content.length : "???"}
       </p>
