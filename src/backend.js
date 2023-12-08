@@ -2,13 +2,15 @@ import axios from 'axios';
 
 export async function getDeckInfo(currentUserId) {
 
-  const res = await axios.get(`https://api.soundcard.online/get-owned-sets/${currentUserId}`);
+  const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/get-owned-sets/${currentUserId}`);
 
-  if (res.status !== 200) {
-    alert('Error fetching deck info');
-  }
+  const data = await res.json();
 
-  return Object.keys(res.data).map(key => ({ id: key, name: res.data[key] }));
+  // if (res.status !== 200) {
+  //   alert('Error fetching deck info');
+  // }
+
+  return Object.keys(data).map(key => ({ id: key, name: res.data[key] }));
 }
 
 export async function getCardDeck(id) {
