@@ -1,5 +1,6 @@
 import { useGoogleLogin } from '@react-oauth/google';
 import { useAuthStore } from '../../stores/authStore';
+import { BACKEND_URL } from '../../constants';
 import axios from 'axios';
 
 export function useLogin() {
@@ -8,17 +9,23 @@ export function useLogin() {
   const googleLogin = useGoogleLogin({
     onSuccess: async tokenResponse => {
       console.log(tokenResponse);
-      // fetching userinfo can be done on the client or the server
       const userInfo = await axios
         .get('https://www.googleapis.com/oauth2/v3/userinfo', {
           headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
         })
         .then(res => res.data);
 
-      loginUser(userInfo)
-      console.log(userInfo);
+      const res = await axios.post(`${BACKEND_URL}/make-user/`, {
+        UserID: userInfo.sub,
+      });
+
+      if (res.status === 200) {
+        loginUser(userInfo)
+        console.log(res.data);
+      } else {
+        alert('Error logging in');
+      }
     },
-    // flow: 'implicit', // implicit is the default
   });
 
   return googleLogin;

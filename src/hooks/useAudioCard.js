@@ -14,10 +14,10 @@ export function useCardDeck(id) {
   }
 }
 
-export function useDeckInfo() {
+export function useDeckInfo(currentUser) {
   const { data, mutate, error } = useSWR(
-    `/api/decks`,
-    () => getDeckInfo()
+    currentUser !== null && `/api/decks/${currentUser.sub}`,
+    () => getDeckInfo(currentUser.sub)
   )
   return {
     deckInfo: data,

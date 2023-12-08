@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useFlashcardStore } from "../stores/flashcardStore";
 import { useCardDeck } from "../hooks/useAudioCard";
-import { BACKEND_URL, USERID_TOKEN } from "../constants";
+import { BACKEND_URL } from "../constants";
 
 export default function CardPlayController({ className }) {
   const [cardIndex, setCardIndex] = useFlashcardStore((state) => [
@@ -18,6 +18,7 @@ export default function CardPlayController({ className }) {
     state.isPlaying,
     state.setIsPlaying,
   ]);
+  const audioProcessing = useFlashcardStore((state) => state.audioProcessing);
 
   const { cardDeck } = useCardDeck(cardDeckId);
 
@@ -26,11 +27,9 @@ export default function CardPlayController({ className }) {
 
   useEffect(() => {
     if (isPlaying && cardDeck && !isDelay && cardDeck.content[cardIndex]) {
-      const cardRequestId =
-        localStorage.getItem(USERID_TOKEN) + cardDeck.content[cardIndex].id;
       const requestURL = frontFacing
-        ? `${BACKEND_URL}/get-card/front${cardRequestId}/`
-        : `${BACKEND_URL}/get-card/back${cardRequestId}/`;
+        ? `${BACKEND_URL}/get-card/${cardDeck.content[cardIndex].front}/`
+        : `${BACKEND_URL}/get-card/${cardDeck.content[cardIndex].back}/`;
       fetch(requestURL)
         .then((response) => response.blob())
         .then((blob) => {
@@ -102,87 +101,83 @@ export default function CardPlayController({ className }) {
     <main
       className={className + " flex flex-col justify-center items-center gap-4"}
     >
-      {cardDeckId != null && (
-        <>
-          <audio ref={audioRef} />
-          <p className="text-primary">
-            {parseInt(cardIndex) + 1}/
-            {cardDeck ? cardDeck.content.length : "???"}
-          </p>
-          <input
-            onChange={handleRangeChange}
-            type="range"
-            min={0}
-            max={cardDeck ? cardDeck.content.length - 1 : 100}
-            value={cardIndex}
-            className="range range-primary scale-75 w-[15vw]"
+      <audio ref={audioRef} />
+      <p className="text-primary">
+        {parseInt(cardIndex) + 1}/{cardDeck ? cardDeck.content.length : "???"}
+      </p>
+      <input
+        onChange={handleRangeChange}
+        type="range"
+        min={0}
+        max={cardDeck ? cardDeck.content.length - 1 : 100}
+        value={cardIndex}
+        className="range range-primary scale-75 w-[15vw]"
+      />
+      <section className="flex justify-around items-center space-x-3 text-primary">
+        <svg
+          onClick={handlePreviousCard}
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={3}
+          stroke="currentColor"
+          className="w-8 h-10 py-2 px-1 hover:bg-gray-200 active:scale-95"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15.75 19.5L8.25 12l7.5-7.5"
           />
-          <section className="flex justify-around items-center space-x-3 text-primary">
-            <svg
-              onClick={handlePreviousCard}
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={3}
-              stroke="currentColor"
-              className="w-8 h-10 py-2 px-1 hover:bg-gray-200 active:scale-95"
-            >
+        </svg>
+
+        <button onClick={handlePlayingClick} disabled={audioProcessing > 0}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-16 h-16 active:scale-95"
+          >
+            {isPlaying ? (
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M15.75 19.5L8.25 12l7.5-7.5"
+                d="M14.25 9v6m-4.5 0V9M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
-            </svg>
-
-            <svg
-              onClick={handlePlayingClick}
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="w-16 h-16 active:scale-95"
-            >
-              {isPlaying ? (
+            ) : (
+              <>
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  d="M14.25 9v6m-4.5 0V9M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
-              ) : (
-                <>
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z"
-                  />
-                </>
-              )}
-            </svg>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z"
+                />
+              </>
+            )}
+          </svg>
+        </button>
 
-            <svg
-              onClick={handleNextCard}
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={3}
-              stroke="currentColor"
-              className="w-8 h-10 py-2 px-1 hover:bg-gray-200 active:scale-95"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M8.25 4.5l7.5 7.5-7.5 7.5"
-              />
-            </svg>
-          </section>
-        </>
-      )}
+        <svg
+          onClick={handleNextCard}
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={3}
+          stroke="currentColor"
+          className="w-8 h-10 py-2 px-1 hover:bg-gray-200 active:scale-95"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M8.25 4.5l7.5 7.5-7.5 7.5"
+          />
+        </svg>
+      </section>
     </main>
   );
 }

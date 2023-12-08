@@ -9,6 +9,10 @@ export default function ProfileAvatar({ className }) {
     useShallow((state) => [state.currentUser, state.logoutUser])
   );
 
+  function handleLogout() {
+    logoutUser();
+  }
+
   return (
     <main className={className}>
       {!currentUser ? (
@@ -29,7 +33,7 @@ export default function ProfileAvatar({ className }) {
                 <a>Settings</a>
               </li>
               <li>
-                <a onClick={logoutUser}>Sign Out</a>
+                <a onClick={handleLogout}>Sign Out</a>
               </li>
             </ul>
           </div>
