@@ -45,6 +45,11 @@ function App() {
       style={{ fontFamily: "Chalkboard,comic sans ms,'sans-serif'" }}
       className="flex flex-col justify-center items-center gap-20 w-screen h-screen"
     >
+      <img
+        className="fixed top-7 left-7 w-10"
+        src="src/assets/audio-card-logo-pure.png"
+        alt="audio card logo"
+      />
       <ProfileAvatar className="absolute top-7 right-7" />
       {currentUser && <DeckDropDown />}
       <CardSlide />
