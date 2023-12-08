@@ -1,8 +1,9 @@
 /* eslint-disable react/prop-types */
 import { useState, useRef } from "react";
+import { useAuthStore } from "../stores/authStore";
 import { useFlashcardStore } from "../stores/flashcardStore";
 import { useCardDeck, useDeckInfo } from "../hooks/useAudioCard";
-import { addCardDeck, deleteCardDeck, upsertCardDeck } from "../backend";
+import { addCardDeck, deleteCardDeck, renameCardDeck } from "../backend";
 
 import "./DeckDropDown.css";
 
@@ -11,9 +12,15 @@ export default function DeckDropDown({ className }) {
   const setCardDeckId = useFlashcardStore((state) => state.setCardDeckId);
   const setCardIndex = useFlashcardStore((state) => state.setCardIndex);
   const setFrontFacing = useFlashcardStore((state) => state.setFrontFacing);
+  const [addLoading, removeLoading] = useFlashcardStore((state) => [
+    state.addLoading,
+    state.removeLoading,
+  ]);
+
+  const currentUser = useAuthStore((state) => state.currentUser);
 
   const { cardDeck, mutate: mutateCardDeck } = useCardDeck(cardDeckId);
-  const { deckInfo, mutate: mutateDeckInfo } = useDeckInfo();
+  const { deckInfo, mutate: mutateDeckInfo } = useDeckInfo(currentUser);
 
   const [editingId, setEditingId] = useState(null);
 
@@ -26,33 +33,33 @@ export default function DeckDropDown({ className }) {
 
   function handleEditSave() {
     const newDeckName = deckNameInputRef.current.value;
-    console.log(newDeckName);
     setEditingId(null);
-    const newDeck = { ...cardDeck };
-    newDeck.name = newDeckName;
-    upsertCardDeck(newDeck).then(() => {
-      mutateCardDeck();
-      mutateDeckInfo();
-    });
+    const newDeckInfo = [...deckInfo];
+    newDeckInfo.find(({ id }) => id === cardDeckId).name = newDeckName;
+    renameCardDeck(currentUser.sub, cardDeckId, newDeckName);
+    mutateCardDeck();
+    mutateDeckInfo(newDeckInfo);
   }
 
   function handleDeckCreate() {
-    addCardDeck().then((newDeck) => {
-      setCardDeckId(newDeck.id);
+    addLoading();
+    addCardDeck(currentUser.sub).then(async (newDeckId) => {
+      await Promise.all([mutateDeckInfo(), mutateCardDeck()]);
+      setCardDeckId(newDeckId);
       setCardIndex(0);
       setFrontFacing(true);
-      mutateCardDeck();
-      mutateDeckInfo();
+      removeLoading();
     });
   }
 
   function handleDeckDelete(id) {
-    deleteCardDeck(id).then(() => {
+    addLoading();
+    deleteCardDeck(currentUser.sub, id).then(async () => {
       setCardDeckId(null);
+      await Promise.all([mutateCardDeck(), mutateDeckInfo()]);
       setCardIndex(0);
       setFrontFacing(true);
-      mutateCardDeck();
-      mutateDeckInfo();
+      removeLoading();
     });
   }
 
@@ -64,7 +71,9 @@ export default function DeckDropDown({ className }) {
           role="button"
           className="flex justify-center items-center w-72 sm:w-[20vw] h-10 rounded-md bg-secondary hover:bg-primary text-slate-100"
         >
-          {!cardDeck ? "loading..." : cardDeck.name}
+          {cardDeck && deckInfo
+            ? deckInfo.find(({ id }) => id === cardDeckId).name
+            : ""}
         </div>
         {deckInfo && (
           <ul className="dropdown-content z-[99] menu p-2 shadow bg-base-100 rounded-box w-72 sm:w-[20vw] max-h-48 overflow-y-auto grid grid-cols-1">

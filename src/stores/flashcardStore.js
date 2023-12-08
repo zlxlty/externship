@@ -4,7 +4,7 @@ export const useFlashcardStore = create((set) => ({
   cardIndex: 0,
   setCardIndex: (cardIndex) => set(() => ({ cardIndex })),
 
-  cardDeckId: 0,
+  cardDeckId: null,
   setCardDeckId: (cardDeckId) => set(() => ({ cardDeckId })),
 
   isPlaying: false,
@@ -15,4 +15,12 @@ export const useFlashcardStore = create((set) => ({
 
   deckList: null,
   setDeckList: (deckList) => set(() => ({ deckList })),
+
+  loadingCount: 0,
+  addLoading: () => set(state => ({ loadingCount: state.loadingCount + 1 })),
+  removeLoading: () => set(state => ({ loadingCount: state.loadingCount - 1 })),
+
+  audioProcessing: 0,
+  addAudioProcessing: () => set(state => ({ audioProcessing: state.audioProcessing + 1 })),
+  removeAudioProcessing: () => set(state => ({ audioProcessing: state.audioProcessing - 1 })),
 }))

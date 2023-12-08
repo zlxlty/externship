@@ -1,5 +1,7 @@
-import { sleep } from './utils';
+import axios from 'axios';
+import { BACKEND_URL } from './constants';
 
+//DELETE
 const DemoDeckList = [
   // a card deck is an object with the following properties:
   {
@@ -40,47 +42,113 @@ const DemoDeckList = [
   },
 ]
 
+//DELETE
 export function initDemoDeckList() {
   !localStorage.getItem('deckList') && localStorage.setItem('deckList', JSON.stringify(DemoDeckList));
 }
 
-export async function getDeckInfo() {
-  await sleep(200);
-  const deckList = JSON.parse(localStorage.getItem('deckList'));
-  return deckList && deckList.map(deck => ({ id: deck.id, name: deck.name }));
+export async function getDeckInfo(currentUserId) {
+
+  const res = await axios.get(`${BACKEND_URL}/get-owned-sets/${currentUserId}`);
+
+  if (res.status !== 200) {
+    alert('Error fetching deck info');
+  }
+
+  return Object.keys(res.data).map(key => ({ id: key, name: res.data[key] }));
 }
 
 export async function getCardDeck(id) {
-  await sleep(200);
-  const deckList = JSON.parse(localStorage.getItem('deckList'));
-  return deckList && deckList.find(deck => deck.id === parseInt(id));
-}
 
-export async function addCardDeck() {
-  await sleep(200);
-  const deckList = JSON.parse(localStorage.getItem('deckList'));
-  const id = deckList[deckList.length - 1].id + 1;
-  const cardDeck = {
-    id,
-    name: `New Deck ${id}`,
-    content: []
+  const res = await axios.get(`${BACKEND_URL}/get-cards-in-set/${id}`);
+
+  if (res.status !== 200) {
+    alert('Error fetching deck content');
   }
-  const newDeckList = [...deckList, cardDeck];
-  localStorage.setItem('deckList', JSON.stringify(newDeckList));
-  return cardDeck;
+
+  const content = res.data.set.map(card => ({ front: card[0], back: card[1] }))
+
+  return {
+    id,
+    content
+  };
 }
 
-export async function deleteCardDeck(id) {
-  await sleep(200);
-  const deckList = JSON.parse(localStorage.getItem('deckList'));
-  const newDeckList = deckList.filter(deck => deck.id !== parseInt(id));
-  localStorage.setItem('deckList', JSON.stringify(newDeckList));
+export async function addCardDeck(currentUserId) {
+
+  const res = await axios.post(`${BACKEND_URL}/make-card-set/`, {
+    "UserID": currentUserId,
+    "Name": "New Deck"
+  })
+
+  if (res.status !== 200) {
+    alert('Error adding deck');
+  }
+
+  return res.data;
 }
 
-export async function upsertCardDeck(cardDeck) {
-  await sleep(200);
-  const deckList = JSON.parse(localStorage.getItem('deckList'));
-  const newDeckList = deckList.filter(deck => deck.id !== cardDeck.id);
-  newDeckList.push(cardDeck);
-  localStorage.setItem('deckList', JSON.stringify(newDeckList));
+export async function deleteCardDeck(currentUserId, cardDeckId) {
+  const res = await axios.post(`${BACKEND_URL}/delete-card-set/`, {
+    "UserID": currentUserId,
+    "CardSetID": cardDeckId
+  });
+
+  if (res.status !== 200) {
+    alert('Error deleting deck');
+  }
+}
+
+export async function renameCardDeck(currentUserId, cardDeckId, newName) {
+  const res = await axios.post(`${BACKEND_URL}/rename-card-set/`, {
+    "UserID": currentUserId,
+    "CardSetID": cardDeckId,
+    "NewName": newName
+  });
+
+  if (res.status !== 200) {
+    alert('Error renaming deck');
+  }
+}
+
+export async function addCard(currentUserId, cardDeckId) {
+
+  const res = await axios.post(`${BACKEND_URL}/add-cards/`, {
+    "UserID": currentUserId,
+    "CardSetID": cardDeckId,
+    "cards": [
+      ["", ""]
+    ]
+  })
+
+  if (res.status !== 200) {
+    alert('Error adding card');
+  }
+}
+
+export async function updateCard(currentUserId, cardDeckId, cardIndex, card) {
+  const requestBody = {
+    "UserID": currentUserId,
+    "CardSetID": cardDeckId,
+    "CardIdx": cardIndex,
+    "NewCard": [card.front, card.back]
+  }
+
+  const res = await axios.post(`${BACKEND_URL}/update-card/`, requestBody);
+
+  if (res.status !== 200) {
+    alert('Error updating card');
+  }
+}
+
+export async function deleteCard(currentUserId, cardDeckId, cardIndex) {
+  const res = await axios.post(`${BACKEND_URL}/delete-card/`, {
+    "UserID": currentUserId,
+    "CardSetID": cardDeckId,
+    "CardIdx": cardIndex
+  });
+
+  if (res.status !== 200) {
+    alert('Error deleting card');
+  }
 }

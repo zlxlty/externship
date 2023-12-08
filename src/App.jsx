@@ -1,28 +1,44 @@
 import { useEffect } from "react";
-import { v4 as uuidv4 } from "uuid";
 import "./App.css";
-import { initDemoDeckList } from "./backend";
-import { USERID_TOKEN } from "./constants";
+import { useAuthStore } from "./stores/authStore";
+import { useDeckInfo } from "./hooks/useAudioCard";
+import { useFlashcardStore } from "./stores/flashcardStore";
 
 import ProfileAvatar from "./components/ProfileAvatar";
 import DeckDropDown from "./components/DeckDropDown";
 import CardSlide from "./components/CardSlide";
 import CardPlayController from "./components/CardPlayController";
+import LoadingModal from "./components/LoadingModal";
 // Card: { id: number, front: string, back: string }
 // CardDeck: { id: number, name: string, content: Card[] }
 // DeckList: { id: number, name: string }[]  // a list of card deck info wihout content
 
 function App() {
   // DEV: load DemoDeckList to localStorage as a fake database
-  useEffect(() => {
-    initDemoDeckList();
-    generateUUID();
-  }, []);
 
-  function generateUUID() {
-    !localStorage.getItem(USERID_TOKEN) &&
-      localStorage.setItem(USERID_TOKEN, uuidv4());
-  }
+  const currentUser = useAuthStore((state) => state.currentUser);
+  const { deckInfo, mutate: mutateDeckInfo } = useDeckInfo(currentUser);
+  const cardDeckId = useFlashcardStore((state) => state.cardDeckId);
+  const setCardDeckId = useFlashcardStore((state) => state.setCardDeckId);
+  const setCardIndex = useFlashcardStore((state) => state.setCardIndex);
+  const setIsPlaying = useFlashcardStore((state) => state.setIsPlaying);
+  const loadingCount = useFlashcardStore((state) => state.loadingCount);
+
+  useEffect(() => {
+    if (deckInfo && deckInfo.length > 0) {
+      setCardDeckId(deckInfo[0].id);
+    }
+  }, [deckInfo, setCardDeckId]);
+
+  useEffect(() => {
+    if (!currentUser) {
+      setCardDeckId(null);
+      setCardIndex(0);
+    } else {
+      mutateDeckInfo();
+    }
+    setIsPlaying(false);
+  }, [currentUser, mutateDeckInfo, setCardDeckId, setCardIndex, setIsPlaying]);
 
   return (
     <main
@@ -30,9 +46,11 @@ function App() {
       className="flex flex-col justify-center items-center gap-20 w-screen h-screen"
     >
       <ProfileAvatar className="absolute top-7 right-7" />
-      <DeckDropDown />
+      {currentUser && <DeckDropDown />}
       <CardSlide />
-      <CardPlayController />
+
+      {cardDeckId && <CardPlayController />}
+      <LoadingModal showing={loadingCount > 0} />
     </main>
   );
 }
