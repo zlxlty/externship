@@ -2,7 +2,7 @@ import axios from 'axios';
 
 export async function getDeckInfo(currentUserId) {
 
-  const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/get-owned-sets/${currentUserId}`);
+  const res = await axios.get(`https://api.soundcard.online/get-owned-sets/${currentUserId}`);
 
   if (res.status !== 200) {
     alert('Error fetching deck info');
