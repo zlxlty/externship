@@ -47,7 +47,7 @@ function App() {
     >
       <img
         className="fixed top-7 left-7 w-10"
-        src="src/assets/audio-card-logo-pure.png"
+        src="/images/audio-card-logo-pure.png"
         alt="audio card logo"
       />
       <ProfileAvatar className="absolute top-7 right-7" />
