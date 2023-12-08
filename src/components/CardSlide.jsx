@@ -4,7 +4,6 @@ import { useFlashcardStore } from "../stores/flashcardStore";
 import { useAuthStore } from "../stores/authStore";
 import { useCardDeck } from "../hooks/useAudioCard";
 import { updateCard, addCard, deleteCard } from "../backend";
-import { BACKEND_URL } from "../constants";
 import axios from "axios";
 
 export default function CardSlide({ className }) {
@@ -70,7 +69,7 @@ export default function CardSlide({ className }) {
 
       addAudioProcessing();
       axios
-        .post(`${BACKEND_URL}/create-card/`, requestBody)
+        .post(`${import.meta.env.VITE_BACKEND_URL}/create-card/`, requestBody)
         .then(() => removeAudioProcessing())
         .catch((err) => console.log(err));
     }

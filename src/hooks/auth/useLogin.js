@@ -1,6 +1,5 @@
 import { useGoogleLogin } from '@react-oauth/google';
 import { useAuthStore } from '../../stores/authStore';
-import { BACKEND_URL } from '../../constants';
 import axios from 'axios';
 
 export function useLogin() {
@@ -15,7 +14,7 @@ export function useLogin() {
         })
         .then(res => res.data);
 
-      const res = await axios.post(`${BACKEND_URL}/make-user/`, {
+      const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/make-user/`, {
         UserID: userInfo.sub,
       });
 
