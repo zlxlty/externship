@@ -2,7 +2,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useFlashcardStore } from "../stores/flashcardStore";
 import { useCardDeck } from "../hooks/useAudioCard";
-import { BACKEND_URL } from "../constants";
 
 export default function CardPlayController({ className }) {
   const [cardIndex, setCardIndex] = useFlashcardStore((state) => [
@@ -28,8 +27,12 @@ export default function CardPlayController({ className }) {
   useEffect(() => {
     if (isPlaying && cardDeck && !isDelay && cardDeck.content[cardIndex]) {
       const requestURL = frontFacing
-        ? `${BACKEND_URL}/get-card/${cardDeck.content[cardIndex].front}/`
-        : `${BACKEND_URL}/get-card/${cardDeck.content[cardIndex].back}/`;
+        ? `${import.meta.env.VITE_BACKEND_URL}/get-card/${
+            cardDeck.content[cardIndex].front
+          }/`
+        : `${import.meta.env.VITE_BACKEND_URL}/get-card/${
+            cardDeck.content[cardIndex].back
+          }/`;
       fetch(requestURL)
         .then((response) => response.blob())
         .then((blob) => {
