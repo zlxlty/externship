@@ -2,15 +2,18 @@ import axios from 'axios';
 
 export async function getDeckInfo(currentUserId) {
 
-  const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/get-owned-sets/${currentUserId}`);
+  const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/get-owned-sets/${currentUserId}`, {
+    headers: {
+      'Content-Type': 'application/json',
+    }
+  });
 
-  const data = await res.json();
 
-  // if (res.status !== 200) {
-  //   alert('Error fetching deck info');
-  // }
+  if (res.status !== 200) {
+    alert('Error fetching deck info');
+  }
 
-  return Object.keys(data).map(key => ({ id: key, name: res.data[key] }));
+  return Object.keys(res.data).map(key => ({ id: key, name: res.data[key] }));
 }
 
 export async function getCardDeck(id) {
